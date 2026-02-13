@@ -19,13 +19,14 @@ const AI_NAMES = [
 
 export const createTeams = (count: number): Team[] => {
   const teams: Team[] = [];
-  // User Team
-  teams.push({
+
+  // Player is always average/unrated initially, or 5
+  teams.unshift({
     id: 'player',
-    name: 'Bạn (Người chơi)',
+    name: 'BẠN (Player)',
+    strength: 5,
     isPlayer: true,
-    stats: { played: 0, won: 0, drawn: 0, lost: 0, points: 0 },
-    strength: 10 // Player logic is handled by user, strength mainly for simulation if needed
+    stats: { played: 0, won: 0, drawn: 0, lost: 0, points: 0 }
   });
 
   // AI Teams

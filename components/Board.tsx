@@ -6,35 +6,25 @@ const Board: React.FC = () => {
   const width = (BOARD_COLS - 1) * 100;
   const height = (BOARD_ROWS - 1) * 100;
   
-  // High Tech Colors
-  const gridColor = "#1e293b"; // Dark slate for passive lines
-  const glowColor = "#05d9e8"; // Cyan for active areas/borders
+  // Traditional Colors
+  const gridColor = "#111827"; // Ink Black
+  const paperColor = "#fdf5e6"; // Paper background
 
   return (
     <svg 
       viewBox={`-50 -50 ${width + 100} ${height + 100}`} 
       className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none"
+      style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
     >
       <defs>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-          <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-        <linearGradient id="riverGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#05d9e8" stopOpacity="0" />
-          <stop offset="50%" stopColor="#05d9e8" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#05d9e8" stopOpacity="0" />
-        </linearGradient>
+        {/* Paper Texture Filter could go here, but using CSS background is better for perf */}
       </defs>
 
-      {/* Board Background Fill */}
-      <rect x="-45" y="-45" width={width + 90} height={height + 90} fill="#0f172a" opacity="0.8" rx="15" />
-
-      {/* Outer Border with Glow */}
-      <rect x="-20" y="-20" width={width + 40} height={height + 40} fill="none" stroke={glowColor} strokeWidth="2" rx="5" filter="url(#glow)" opacity="0.6" />
+      {/* Board Background Fill (Paper on Wood) */}
+      <rect x="-40" y="-40" width={width + 80} height={height + 80} fill={paperColor} rx="4" />
+      
+      {/* Inner Border */}
+      <rect x="-20" y="-20" width={width + 40} height={height + 40} fill="none" stroke={gridColor} strokeWidth="4" />
 
       {/* Main Grid Lines */}
       <g stroke={gridColor} strokeWidth="2" strokeLinecap="square">
@@ -49,7 +39,7 @@ const Board: React.FC = () => {
           {/* Vertical Lines (Split by River) */}
           {Array.from({ length: BOARD_COLS }).map((_, i) => {
             if (i === 0 || i === BOARD_COLS - 1) {
-              return <line key={`v-${i}`} x1={i * 100} y1="0" x2={i * 100} y2={height} />;
+              return <line key={`v-${i}`} x1={i * 100} y1="0" x2={i * 100} y2={height} strokeWidth="4" />;
             } else {
               return (
                 <React.Fragment key={`v-${i}`}>
@@ -60,15 +50,15 @@ const Board: React.FC = () => {
             }
           })}
 
-          {/* Palace Diagonals (Highlighted) */}
-          <g stroke={glowColor} strokeWidth="1" opacity="0.4">
+          {/* Palace Diagonals */}
+          <g stroke={gridColor} strokeWidth="2" opacity="0.8">
             <line x1="300" y1="0" x2="500" y2="200" />
             <line x1="500" y1="0" x2="300" y2="200" />
             <line x1="300" y1="700" x2="500" y2="900" />
             <line x1="500" y1="700" x2="300" y2="900" />
           </g>
           
-          {/* Markers (Crosshairs) */}
+          {/* Markers (Crosshairs) - Traditional Style */}
           {[
             [2, 1], [2, 7], // Cannons Top
             [7, 1], [7, 7], // Cannons Bottom
@@ -77,11 +67,10 @@ const Board: React.FC = () => {
           ].map(([r, c], idx) => {
             const x = c * 100;
             const y = r * 100;
-            const d = 10;
-            const gap = 5;
+            const d = 15;
+            const gap = 4;
             return (
-              <g key={`mark-${idx}`} stroke={glowColor} strokeWidth="2" opacity="0.8" filter="url(#glow)">
-                 {/* Tech Corners Look */}
+              <g key={`mark-${idx}`} stroke={gridColor} strokeWidth="2">
                 {c > 0 && <path d={`M${x-d-gap},${y-gap} L${x-gap},${y-gap} L${x-gap},${y-d-gap}`} />}
                 {c < 8 && <path d={`M${x+gap},${y-d-gap} L${x+gap},${y-gap} L${x+d+gap},${y-gap}`} />}
                 {c < 8 && <path d={`M${x+d+gap},${y+gap} L${x+gap},${y+gap} L${x+gap},${y+d+gap}`} />}
@@ -91,23 +80,33 @@ const Board: React.FC = () => {
           })}
       </g>
 
-      {/* Digital River */}
-      <rect x="0" y="402" width={width} height="96" fill="url(#riverGradient)" />
-      
-      <g className="select-none pointer-events-none">
+      {/* River Text */}
+      <g className="select-none pointer-events-none" transform={`translate(${width/2}, 450)`}>
           <text 
-            x={width / 2} 
-            y={460} 
+            x="-180" 
+            y="15" 
             textAnchor="middle" 
             dominantBaseline="middle"
-            fill={glowColor} 
-            fontSize="24" 
-            fontWeight="bold"
-            letterSpacing="10"
-            className="font-display opacity-80"
-            filter="url(#glow)"
+            fill={gridColor} 
+            fontSize="50" 
+            fontWeight="normal"
+            className="font-serif opacity-90"
+            style={{ writingMode: 'horizontal-tb' }}
           >
-            COMBAT ZONE
+            楚 河
+          </text>
+          <text 
+            x="180" 
+            y="15" 
+            textAnchor="middle" 
+            dominantBaseline="middle"
+            fill={gridColor} 
+            fontSize="50" 
+            fontWeight="normal"
+            className="font-serif opacity-90"
+            style={{ writingMode: 'horizontal-tb' }}
+          >
+             漢 界
           </text>
       </g>
 

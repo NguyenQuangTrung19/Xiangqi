@@ -8,76 +8,77 @@ interface PieceProps {
   isSelected: boolean;
   isInCheck?: boolean;
   onClick: () => void;
-  style?: React.CSSProperties; // We will use style only for width/height now, pos handled by motion
+  style?: React.CSSProperties; 
 }
 
 const PieceComponent: React.FC<PieceProps> = ({ piece, isSelected, isInCheck, onClick, style }) => {
   const isRed = piece.color === Color.RED;
   const isGeneral = piece.type === PType.GENERAL;
   
-  // Colors for Neon Effect
-  const colorClass = isRed ? 'text-cyber-neonRed border-cyber-neonRed' : 'text-cyber-neonBlue border-cyber-neonBlue';
-  const glowClass = isRed ? 'shadow-neon-red' : 'shadow-neon-blue';
-  const bgClass = isRed ? 'bg-red-950/40' : 'bg-sky-950/40';
-
-  // Position calculation logic moved here for Frame Motion `layout`
-  // Actually, standardizing `top`/`left` via style prop passed from parent + `layout` prop works best.
+  // Traditional Colors
+  const textColorClass = isRed ? 'text-china-red' : 'text-china-ink';
+  const borderColorClass = isRed ? 'border-china-red/30' : 'border-china-ink/30';
+  
+  // 3D Wooden Disc Look
+  // We use a combination of gradients and shadows to create depth
   
   return (
     <motion.div
-      layout
+      initial={{ x: "-50%", y: "-50%" }}
+      animate={{ 
+        x: "-50%", 
+        y: "-50%",
+        zIndex: isSelected ? 30 : 20 
+      }}
       transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 25,
-        mass: 1
+        type: "spring", stiffness: 300, damping: 25, mass: 1
       }}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
-      style={style}
+      style={style} // left and top are passed here
       className={`
         absolute flex items-center justify-center
-        transform -translate-x-1/2 -translate-y-1/2
-        cursor-pointer z-20 select-none
-        ${isSelected ? 'z-30' : ''}
+        cursor-pointer select-none
       `}
     >
       <motion.div 
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         animate={{ 
             scale: isSelected ? 1.15 : 1,
-            boxShadow: isSelected 
-                ? (isRed ? '0 0 25px #ff2a6d' : '0 0 25px #05d9e8') 
-                : (isRed ? '0 0 5px rgba(255,42,109,0.2)' : '0 0 5px rgba(5,217,232,0.2)')
+            rotate: isGeneral && isInCheck ? [0, -5, 5, -5, 5, 0] : 0, // Shake if check
         }}
         className={`
-          w-[85%] h-[85%] rounded-full backdrop-blur-md
+          w-[90%] h-[90%] rounded-full 
           relative flex items-center justify-center
-          border-[2px] ${colorClass} ${bgClass}
-          ${isInCheck && isGeneral ? 'animate-pulse-fast ring-4 ring-red-600' : ''}
+          bg-[#e6c9a8] /* Ivory/Light Wood Base */
+          shadow-[2px_4px_6px_rgba(0,0,0,0.4),inset_0_-4px_4px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.4)]
+          border-[6px] border-[#d4a373] /* Outer Wood Ring */
+          ${isSelected ? 'ring-4 ring-china-gold ring-offset-2 ring-offset-[#5d4037]' : ''}
+          ${isInCheck && isGeneral ? 'ring-4 ring-china-red animate-pulse' : ''}
         `}
       >
-        {/* Tech Ring (Rotating slowly) */}
-        <div className={`absolute inset-0 rounded-full border border-white/10 ${isSelected ? 'animate-spin-slow' : ''}`} 
-             style={{ borderTopColor: isRed ? '#ff2a6d' : '#05d9e8', borderStyle: 'dashed' }}>
-        </div>
+        {/* Inner Groove */}
+        <div className={`absolute inset-1 rounded-full border border-black/10`} />
 
-        {/* Character */}
+        {/* Character - Engraved Look */}
         <span 
             className={`
-            text-xl sm:text-2xl md:text-3xl font-black
-            ${colorClass} drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]
+            text-2xl sm:text-3xl md:text-4xl font-bold
+            ${textColorClass}
             `}
-            style={{ fontFamily: '"Noto Serif SC", serif' }}
+            style={{ 
+                fontFamily: '"Noto Serif SC", serif',
+                textShadow: '0px 1px 0px rgba(255,255,255,0.5), 0px -1px 0px rgba(0,0,0,0.1)' // Engraved effect
+            }}
         >
             {PIECE_CHARS[piece.color][piece.type]}
         </span>
         
-        {/* Gloss Reflection */}
-        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-2/3 h-1/3 bg-gradient-to-b from-white/30 to-transparent rounded-full pointer-events-none" />
+        {/* Subtle texture overlay */}
+        <div className="absolute inset-0 rounded-full opacity-30 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] mix-blend-multiply pointer-events-none" />
       </motion.div>
     </motion.div>
   );
