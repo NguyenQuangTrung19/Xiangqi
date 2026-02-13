@@ -485,230 +485,147 @@ const AppContent: React.FC = () => {
          />
       )}
 
-      {/* GAME MODE LAYOUT */}
+      {/* GAME UI */}
       {appMode === AppMode.GAME && (
-        <div className="w-full max-w-6xl h-full md:h-auto flex flex-col md:flex-row gap-8 items-center md:items-start z-10 transition-all duration-500">
-          
-          {/* LEFT: Game Board Area */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex-1 w-full max-w-[600px] flex flex-col items-center relative"
-          >
-             {/* CHECK PULSE BG (Brush Stroke) */}
-             <AnimatePresence>
-                {gameState.isCheck && !gameState.winner && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center"
-                    >
-                         <div className="w-[120%] h-[120%] bg-china-red/20 blur-3xl rounded-full animate-pulse"></div>
-                    </motion.div>
-                )}
-             </AnimatePresence>
-
-             {/* The Board Frame */}
-             <div className="relative w-full aspect-[9/10] bg-[#5d4037] rounded-lg shadow-2xl border-[12px] border-[#3e2723] touch-manipulation z-10 shadow-ink">
-                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-30 pointer-events-none"></div>
-                 
-                 <Board />
-                 
-                 {/* Click Grid */}
-                 <div className="absolute inset-0 grid grid-rows-10 grid-cols-9 z-10">
-                    {gameState.board.map((row, r) => (
-                        row.map((_, c) => (
-                            <div 
-                                key={`cell-${r}-${c}`}
-                                className="w-full h-full relative"
-                                onClick={() => handleSquareClick(r, c)}
-                            >
-                                {/* Valid Move Dot (Traditional Ink Dot) */}
-                                {gameState.validMoves.some(m => m.r === r && m.c === c) && (
-                                    <div className="absolute inset-0 m-auto w-3 h-3 md:w-4 md:h-4 rounded-full bg-china-ink/40 shadow-sm" />
-                                )}
-                                {/* Last Move Highlight */}
-                                {gameState.lastMove && ((gameState.lastMove.from.r === r && gameState.lastMove.from.c === c) || (gameState.lastMove.to.r === r && gameState.lastMove.to.c === c)) && (
-                                    <div className="absolute inset-0 m-auto w-full h-full bg-china-gold/20 mix-blend-multiply pointer-events-none" />
-                                )}
-                            </div>
-                        ))
-                    ))}
-                 </div>
-
-                 {/* Pieces */}
-                 {gameState.board.flat().map((piece) => {
-                    if (!piece) return null;
-                    const left = ((piece.position.c + 0.5) / 9) * 100 + '%';
-                    const top = ((piece.position.r + 0.5) / 10) * 100 + '%';
-                    const isSelected = gameState.selectedPos?.r === piece.position.r && gameState.selectedPos?.c === piece.position.c;
-                    const isKingUnderCheck = piece.type === PieceType.GENERAL && piece.color === gameState.turn && gameState.isCheck;
-                    return (
-                        <PieceComponent 
-                            key={piece.id}
-                            piece={piece}
-                            isSelected={isSelected}
-                            isInCheck={isKingUnderCheck}
-                            onClick={() => handleSquareClick(piece.position.r, piece.position.c)}
-                            style={{ left, top, width: '11.11%', height: '10%' }}
-                        />
-                    );
-                })}
+        <div className="relative z-10 w-full max-w-4xl flex flex-col items-center gap-4 h-[100dvh] p-4">
+            
+            {/* Header: Turn Info & Controls */}
+            <div className="w-full flex justify-between items-center bg-china-paper/10 backdrop-blur-md p-3 rounded-xl border border-china-wood-light/20 shadow-lg">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => setAppMode(AppMode.MENU)} className="p-2 bg-china-wood-dark rounded-lg text-china-paper hover:bg-china-red transition-colors">
+                        <User size={20} />
+                    </button>
+                    <div className="flex flex-col">
+                        <div className="text-xs text-china-wood-light uppercase tracking-wider font-bold">Lượt đi</div>
+                        <div className={`text-xl font-bold ${gameState.turn === Color.RED ? 'text-china-red' : 'text-china-ink'}`}>
+                            {gameState.turn === Color.RED ? 'BẠN (ĐỎ)' : 'AI (ĐEN)'}
+                        </div>
+                    </div>
+                </div>
                 
-                {/* VICTORY MODAL OVERLAY */}
-                <AnimatePresence>
-                {(gameState.winner || gameState.isDraw) && (
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                    >
-                         <motion.div 
-                            initial={{ scale: 0.8, y: 50, rotateX: 20 }}
-                            animate={{ scale: 1, y: 0, rotateX: 0 }}
-                            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            className="bg-china-paper border-4 border-china-wood-dark p-8 rounded shadow-2xl text-center relative overflow-hidden min-w-[320px] max-w-[90%]"
-                        >
-                              <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')]"></div>
-                              
-                              <h2 
-                                className={`text-5xl md:text-6xl font-serif font-black mb-4 relative z-10 drop-shadow-md ${gameState.winner === Color.RED ? 'text-china-red' : 'text-china-ink'}`}
-                              >
-                                  {gameState.isDraw ? t('game.draw') : (gameState.winner === Color.RED ? t('game.victory') : t('game.defeat'))}
-                              </h2>
-                              
-                              <div className="flex flex-col gap-4 relative z-10 mt-6">
-                                  {tournamentState ? (
-                                      <>
-                                        <button onClick={startNextGameInMatch} className="bg-china-red text-china-paper font-bold py-3 px-6 rounded shadow hover:bg-red-800 transition-colors border border-china-wood-dark uppercase">
-                                            {t('game.next_battle')}
-                                        </button>
-                                        <button onClick={finalizeTournamentMatch} className="bg-china-wood-light text-china-wood-dark font-bold py-3 px-6 rounded shadow hover:bg-china-wood transition-colors border border-china-wood-dark uppercase">
-                                            {t('game.finish_war')}
-                                        </button>
-                                      </>
-                                  ) : (
-                                      <button onClick={() => resetGame()} className="bg-china-red text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-red-800 transition-transform hover:scale-105 border-2 border-china-wood-dark uppercase">
-                                          {t('game.rematch')}
-                                      </button>
-                                  )}
-                              </div>
-                         </motion.div>
-                    </motion.div>
-                )}
-                </AnimatePresence>
-             </div>
-          </motion.div>
+                <div className="flex items-center gap-2">
+                    {/* Add Settings/Sound toggles here if needed */}
+                    <div className="px-3 py-1 bg-china-wood-dark/50 rounded text-xs font-mono text-china-gold border border-china-wood-light/30">
+                        {aiEnabled ? `AI: ${difficulty.toUpperCase()}` : 'PvP'}
+                    </div>
+                </div>
+            </div>
 
-          {/* RIGHT: Stats Panel (Side Panel) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="w-full md:w-80 flex flex-col gap-6 mt-6 md:mt-0"
-          >
-             {/* Player Card */}
-             <div className="bg-china-paper border-2 border-china-wood-dark p-4 rounded shadow-lg flex items-center gap-4 relative overflow-hidden group shadow-paper transition-all hover:-translate-y-1">
-                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')]"></div>
-                 <div className="w-14 h-14 rounded-full border-2 border-china-red bg-china-red/10 flex items-center justify-center text-china-red relative z-10 shadow-inner">
-                     <span className="font-serif font-bold text-2xl">帥</span>
+            {/* Main Game Area: Board */}
+            <div className="flex-1 w-full flex items-center justify-center relative my-2">
+                 <div className="relative w-full aspect-[9/10] max-h-[85vh] shadow-2xl rounded bg-[#dda15e]">
+                    <Board />
+                    
+                    {/* Pieces Layer */}
+                    <div className="absolute inset-0 z-10 pointer-events-none">
+                        <AnimatePresence>
+                        {gameState.board.map((row, r) => 
+                            row.map((piece, c) => 
+                                piece ? (
+                                    <PieceComponent 
+                                        key={`${piece.id}-${piece.position.r}-${piece.position.c}`} 
+                                        piece={piece} 
+                                        position={{ r, c }} 
+                                        isSelected={gameState.selectedPos?.r === r && gameState.selectedPos?.c === c}
+                                        isValidMove={false} // Handled by dots
+                                        onClick={() => handleSquareClick(r, c)}
+                                        lastMove={gameState.lastMove}
+                                    />
+                                ) : null
+                            )
+                        )}
+                        </AnimatePresence>
+
+                        {/* Valid Move Indicators */}
+                        {gameState.validMoves.map((pos) => (
+                             <div 
+                                key={`valid-${pos.r}-${pos.c}`}
+                                className="absolute w-[3%] h-[3%] bg-green-500/50 rounded-full cursor-pointer z-50 animate-pulse pointer-events-auto"
+                                style={{ 
+                                    left: `${(pos.c / 8) * 100}%`, 
+                                    top: `${(pos.r / 9) * 100}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    touchAction: 'none'
+                                }}
+                                onClick={() => handleSquareClick(pos.r, pos.c)}
+                             />
+                        ))}
+                        
+                         {/* Selection Highlight (Extra) */}
+                         {gameState.selectedPos && (
+                            <div 
+                                className="absolute w-[11%] h-[11%] border-2 border-green-500 rounded-full z-40 pointer-events-none"
+                                style={{ 
+                                    left: `${(gameState.selectedPos.c / 8) * 100}%`, 
+                                    top: `${(gameState.selectedPos.r / 9) * 100}%`,
+                                    transform: 'translate(-50%, -50%)'
+                                }}
+                            />
+                        )}
+                    </div>
                  </div>
-                 <div className="flex-1 relative z-10">
-                     <div className="text-xs text-china-red font-bold uppercase tracking-wider mb-1 opacity-75">{t('role.general')} ({t('color.red')})</div>
-                     <div className="font-serif text-xl font-bold text-china-ink">BẠN</div>
+            </div>
+
+            {/* Footer: Status / Captured? */}
+            <div className="w-full bg-china-paper/90 text-china-ink p-3 rounded-t-xl shadow-[0_-4px_6px_rgba(0,0,0,0.1)] border-t-2 border-china-wood-dark flex justify-between items-center z-20">
+                 <div className="flex flex-col">
+                    <div className="text-xs font-bold text-china-wood-dark uppercase">Trạng thái</div>
+                    <div className="text-sm font-serif font-bold">
+                        {gameState.isCheck ? "⚠️ Đang bị chiếu!" : "Bình thường"}
+                    </div>
                  </div>
-                 {gameState.turn === Color.RED && !gameState.winner && (
-                     <div className="w-4 h-4 bg-china-red rounded-full animate-pulse border-2 border-white shadow-sm relative z-10"></div>
-                 )}
-             </div>
-
-             {/* VS Connector */}
-             <div className="flex justify-center -my-3 z-10">
-                 <div className="bg-china-wood-dark text-china-paper px-4 py-1 rounded-full text-xs font-serif border-2 border-china-gold shadow-md font-bold italic tracking-widest">{t('match.vs')}</div>
-             </div>
-
-             {/* Opponent Card */}
-             <div className="bg-china-paper border-2 border-china-wood-dark p-4 rounded shadow-lg flex items-center gap-4 relative overflow-hidden shadow-paper transition-all hover:-translate-y-1">
-                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')]"></div>
-                 <div className="w-14 h-14 rounded-full border-2 border-china-ink bg-china-ink/10 flex items-center justify-center text-china-ink relative z-10 shadow-inner">
-                     <span className="font-serif font-bold text-2xl">將</span>
-                 </div>
-                 <div className="flex-1 relative z-10">
-                     <div className="text-xs text-china-ink font-bold uppercase tracking-wider mb-1 opacity-75">{t('role.general')} ({t('color.black')})</div>
-                     <div className="font-serif text-xl font-bold text-china-ink">{opponentName}</div>
-                     <div className="text-[10px] text-china-wood-dark font-bold uppercase tracking-tighter">{t(`menu.difficulty.${opponentStrength}` as any)} AI</div>
-                 </div>
-                 {gameState.turn === Color.BLACK && !gameState.winner && !gameState.isAiThinking && (
-                     <div className="w-4 h-4 bg-china-ink rounded-full animate-pulse border-2 border-white shadow-sm relative z-10"></div>
-                 )}
-                 {gameState.isAiThinking && (
-                     <div className="flex items-center gap-2 text-china-wood-dark text-xs font-bold animate-pulse relative z-10">
-                        <RefreshCw size={14} className="animate-spin" />
-                        {t('game.ai_thinking')}
-                     </div>
-                 )}
-             </div>
-
-             {/* Match Info / Scoreboard */}
-             <div className="bg-[#3e2723] border border-china-wood-light rounded p-5 relative shadow-wood">
-                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')]"></div>
-                 {tournamentState ? (
-                     <div className="text-center relative z-10">
-                         <div className="text-xs text-china-wood-light uppercase tracking-widest mb-2 opacity-75">{t('match.war_score')}</div>
-                         <div className="flex justify-center items-center gap-6 font-serif text-4xl font-bold text-china-paper">
-                             <span className="text-china-red drop-shadow-md">{matchInternalScore.scoreA}</span>
-                             <span className="text-china-wood-light opacity-50">-</span>
-                             <span className="text-white drop-shadow-md">{matchInternalScore.scoreB}</span>
-                         </div>
-                         <div className="text-xs text-china-wood-light mt-3 opacity-75">{t('match.battle_count')} {matchInternalScore.gamesPlayed + (gameState.winner || gameState.isDraw ? 0 : 1)} / 3</div>
-                     </div>
-                 ) : (
-                     <div className="flex flex-col gap-3 relative z-10">
-                         <div className="flex justify-between text-base border-b border-china-wood-light/20 pb-2">
-                             <span className="text-china-wood-light opacity-80">Chế Độ</span>
-                             <span className="text-china-paper font-bold tracking-wide">{t('menu.play_quick')}</span>
-                         </div>
-                         <div className="flex justify-between text-base pt-1">
-                             <span className="text-china-wood-light opacity-80">Trạng Thái</span>
-                             <span className={`font-bold ${gameState.isCheck ? 'text-china-red animate-pulse' : 'text-china-gold'}`}>
-                                 {gameState.isCheck ? t('game.check') : t('game.active')}
-                             </span>
-                         </div>
-                     </div>
-                 )}
-             </div>
-
-             {/* Actions */}
-             <div className="grid grid-cols-2 gap-4 mt-auto">
-                 <button onClick={() => { playSound('click'); setGameState(prev => ({...prev, isDraw: true})); }} className="flex items-center justify-center gap-2 bg-[#5d4037] hover:bg-[#4e342e] text-china-paper py-3 rounded border border-china-wood-light/30 text-sm font-bold transition-colors shadow-lg active:scale-95">
-                     <Flag size={16} /> {t('game.offer_peace')}
-                 </button>
                  <button 
-                    onClick={() => { playSound('click'); tournamentState ? setAppMode(AppMode.TOURNAMENT_DASHBOARD) : setAppMode(AppMode.MENU); }} 
-                    className="flex items-center justify-center gap-2 bg-[#2a1d18] hover:bg-[#1a120e] text-china-red/80 border border-china-red/30 py-3 rounded text-sm font-bold transition-colors shadow-lg active:scale-95"
+                    onClick={finalizeTournamentMatch} // If in match
+                    className="px-4 py-2 bg-china-red text-white font-bold rounded shadow active:scale-95 transition-transform"
                  >
-                     <AlertTriangle size={16} /> {t('game.resign')}
+                    {tournamentState ? "Kết Thúc" : "Thoát"}
                  </button>
-             </div>
-             
-             {/* Check Alert Sidebar Visual */}
-             <AnimatePresence>
-             {gameState.isCheck && !gameState.winner && (
-                 <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="bg-china-red text-china-paper p-3 rounded flex items-center justify-center gap-3 animate-pulse border-2 border-china-gold shadow-lg"
-                 >
-                     <AlertTriangle className="text-china-gold" />
-                     <div className="font-serif font-bold text-lg">{t('game.general_danger')}</div>
-                 </motion.div>
-             )}
-             </AnimatePresence>
-
-          </motion.div>
+            </div>
         </div>
       )}
+      
+      {/* VICTORY MODAL */}
+      <AnimatePresence>
+        {(gameState.winner || gameState.isDraw) && (
+             <motion.div 
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+             >
+                  <motion.div 
+                    initial={{ scale: 0.8, y: 50, rotateX: 20 }}
+                    animate={{ scale: 1, y: 0, rotateX: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                    className="bg-china-paper border-4 border-china-wood-dark p-6 md:p-8 rounded shadow-2xl text-center relative overflow-hidden w-full max-w-sm"
+                >
+                      <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')]"></div>
+                      
+                      <h2 
+                        className={`text-4xl md:text-5xl font-serif font-black mb-4 relative z-10 drop-shadow-md ${gameState.winner === Color.RED ? 'text-china-red' : 'text-china-ink'}`}
+                      >
+                          {gameState.isDraw ? t('game.draw') : (gameState.winner === Color.RED ? t('game.victory') : t('game.defeat'))}
+                      </h2>
+                      
+                      <div className="flex flex-col gap-3 relative z-10 mt-6">
+                          {tournamentState ? (
+                              <>
+                                <button onClick={startNextGameInMatch} className="bg-china-red text-china-paper font-bold py-3 px-6 rounded shadow hover:bg-red-800 transition-colors border border-china-wood-dark uppercase">
+                                    {t('game.next_battle')}
+                                </button>
+                                <button onClick={finalizeTournamentMatch} className="bg-china-wood-light text-china-wood-dark font-bold py-3 px-6 rounded shadow hover:bg-china-wood transition-colors border border-china-wood-dark uppercase">
+                                    {t('game.finish_war')}
+                                </button>
+                              </>
+                          ) : (
+                              <button onClick={() => resetGame()} className="bg-china-red text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-red-800 transition-transform hover:scale-105 border-2 border-china-wood-dark uppercase">
+                                  {t('game.rematch')}
+                              </button>
+                          )}
+                      </div>
+                  </motion.div>
+             </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

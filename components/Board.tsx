@@ -13,7 +13,8 @@ const Board: React.FC = () => {
   return (
     <svg 
       viewBox={`-50 -50 ${width + 100} ${height + 100}`} 
-      className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none"
+      className="w-full h-full block touch-none select-none"
+      preserveAspectRatio="xMidYMid meet"
       style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
     >
       <defs>

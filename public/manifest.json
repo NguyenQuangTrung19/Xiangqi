@@ -1,0 +1,21 @@
+{
+  "name": "Xiangqi Cyber Master",
+  "short_name": "Xiangqi",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#8b4513",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/5726/5726487.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/5726/5726487.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

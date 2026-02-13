@@ -31,3 +31,18 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #bc8a5f; 
 }
+
+/* Mobile Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* Removes 300ms delay */
+}
+
+.touch-none {
+  touch-action: none;
+}
+
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}
